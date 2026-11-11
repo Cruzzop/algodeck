@@ -4,7 +4,7 @@
 
 **Track the DSA problems you solve — and actually remember them.**
 
-AlgoDeck is a full-stack practice tracker with a built-in spaced-repetition scheduler. Log what you solved, keep notes and solutions in one place, and let the app tell you exactly what to revisit before you forget it. Optional AI hints, solution explainers and coaching run on **free OpenRouter models** — no paid API key required.
+AlgoDeck is a full-stack practice tracker with a built-in spaced-repetition scheduler. Log what you solved, keep notes and solutions in one place, and let the app tell you exactly what to revisit before you forget it. AI hints, solution explainers and coaching work out of the box on free providers — no paid API key required.
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-087ea4?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
@@ -38,7 +38,7 @@ AlgoDeck treats every solved problem like a flashcard. It schedules reviews usin
 - **Problem detail** — notes, saved solution, time spent, full review schedule (ease, interval, repetitions) and recent review history.
 - **Review sessions** — keyboard-first reviewing (`space` to reveal, `1`–`4` to rate, `h` for a hint) with a live preview of the next interval for every rating.
 - **Spaced repetition** — SM-2-inspired scheduling with four ratings: Again, Hard, Good, Easy. Again reschedules in 10 minutes; everything else grows the interval.
-- **Free AI helpers (optional)** — progressive review hints, a solution explainer that turns saved code into a revision card, and a dashboard coach. Powered by OpenRouter free models with automatic model discovery and fallback.
+- **Built-in free AI** — progressive review hints, a solution explainer that turns saved code into a revision card, and a dashboard coach. Works with no key, and upgrades to OpenRouter free models when a key is added.
 - **Quick actions** — add, edit, delete, and toggle solved/todo from the table without leaving the page.
 - **Polished dark UI** — custom design system, inline SVG icons and charts, animated modals and toasts, responsive down to mobile. No UI-library dependency.
 - **Typed end to end** — Prisma models, Zod request validation and shared TypeScript DTOs.
@@ -70,7 +70,7 @@ AlgoDeck treats every solved problem like a flashcard. It schedules reviews usin
 | UI         | **React 19** + **Tailwind CSS 4**              | Fast to build, easy to customise                 |
 | Database   | **SQLite** via **Prisma 6**                    | Zero setup — the database is a single file       |
 | Validation | **Zod**                                        | Parse and validate every API request             |
-| AI         | **OpenRouter free models**                     | Optional AI with no paid key; automatic fallback |
+| AI         | **Pollinations + OpenRouter free models**      | Keyless AI out of the box; automatic fallback    |
 | Icons      | Inline SVG components                          | No icon dependency, fully styleable              |
 | Charts     | Hand-built SVG + CSS                          | No chart library, no bundle bloat                |
 
@@ -116,15 +116,16 @@ npm run dev
 | `npm run db:push`   | Push the Prisma schema without seeding                   |
 | `npm run db:studio` | Open Prisma Studio to browse the database                |
 
-## AI features (optional, free)
+## AI features (free, works out of the box)
 
-AlgoDeck can add three AI helpers. They are **free to run**: create an OpenRouter account, generate a key at [openrouter.ai/keys](https://openrouter.ai/keys) (no card, no credits), and add it to your local `.env` (copy `.env.example` if you haven't yet):
+AlgoDeck ships with three AI helpers that work **without any API key or signup**. The default provider is Pollinations' free GPT-OSS 20B endpoint, called server-side. If you want better quality and higher limits, add a free OpenRouter key — OpenRouter is then tried first, and the keyless provider stays as the final fallback.
 
 ```bash
+# optional upgrade — get a free key at https://openrouter.ai/keys
 OPENROUTER_API_KEY="sk-or-v1-..."
 ```
 
-Restart the dev server. Without a key the whole app still works — AI buttons stay visible but disabled, with a short note explaining how to turn them on.
+Restart the dev server after changing `.env`. No card or credits are needed. To disable the keyless path entirely, set `AI_KEYLESS_FALLBACK="false"`; AI then requires an OpenRouter key.
 
 | Where | Feature | What it does |
 | ----- | ------- | ------------ |
@@ -132,21 +133,22 @@ Restart the dev server. Without a key the whole app still works — AI buttons s
 | Problem detail | **AI explainer** | Turns your saved solution into a revision card: core idea, pattern, complexity, steps, edge cases and an interview tip. |
 | Review session | **Progressive hints** | Three levels of nudges, from a gentle pointer to a detailed outline — without revealing the final code. |
 
-### Why the AI keeps working when free models change
+### Provider order and changing free models
 
 Free model IDs on OpenRouter rotate often. AlgoDeck does not hard-code a single model:
 
-1. At runtime it reads `https://openrouter.ai/api/v1/models` and keeps only models whose prompt and completion prices are both `0` and that output text (audio, image and embedding endpoints are filtered out).
-2. It ranks that live list with a small curated preference order and remembers the last model that worked, trying it first on the next request.
+1. If `OPENROUTER_API_KEY` is set, it reads `https://openrouter.ai/api/v1/models` at runtime and keeps only models whose prompt and completion prices are both `0` and that output text.
+2. It ranks that live list with a small curated preference order and remembers the last model that worked, trying it first next time.
 3. If a model is removed (`404`) or fails, it is marked unavailable for 10 minutes and the request retries on the next free model. Rate limits (`429`) and `5xx` responses fall through the same way.
-4. The chain always ends with OpenRouter's own `openrouter/free` router, which selects an available free model server-side.
-5. The catalogue is cached for 30 minutes. If OpenRouter is unreachable, a last-known fallback list keeps the feature alive.
+4. The OpenRouter chain ends with its own `openrouter/free` router, which selects an available free model server-side.
+5. If OpenRouter is unreachable or every attempt fails, the request falls back to the keyless provider.
+6. Without an OpenRouter key, the keyless provider answers directly, so AI works on a fresh clone.
 
-`GET /api/ai/status` shows the current free-model count and the chain that would be tried. Set `OPENROUTER_MODEL` only if you want to pin one model ahead of the automatic chain.
+`GET /api/ai/status` shows the active provider, free-model count and the chain that would be tried. Set `OPENROUTER_MODEL` only if you want to pin one model ahead of the automatic chain.
 
-> **Privacy:** prompts include the problem title, platform, difficulty and topics. The explainer also sends your notes and solution; the coach sends aggregate tracker stats. They go to OpenRouter and whichever free provider serves the request. Don't enable AI if your notes contain anything private.
+> **Privacy:** prompts include the problem title, platform, difficulty and topics. The explainer also sends your notes and solution; the coach sends aggregate tracker stats. With no OpenRouter key, these requests go to Pollinations. With a key, OpenRouter and its free model providers are tried first. Don't use AI if your notes contain anything private.
 
-> **Free-tier reality:** free models are rate-limited and sometimes busy. AlgoDeck tries a few alternatives and then shows a friendly error instead of hanging.
+> **Free-tier reality:** the keyless provider allows one text request per 30 seconds per IP. If you hit that limit, AlgoDeck shows a cooldown message with the wait time instead of hanging. OpenRouter's free models have their own rate limits, and the app tries several alternatives before giving up.
 
 ## How the scheduling works
 
@@ -192,7 +194,7 @@ Intervals are clamped between 1 and 365 days, and ease is clamped between 1.3 an
 │   │   ├── review/            # Keyboard-driven review session
 │   │   └── ui/                # Button, input, modal, toast, empty state
 │   └── lib/
-│       ├── ai/                # Config, OpenRouter client, prompts
+│       ├── ai/                # Provider chain, OpenRouter, keyless, prompts
 │       ├── db.ts              # Prisma singleton
 │       ├── srs.ts             # Spaced-repetition scheduler
 │       ├── queries.ts         # Dashboard aggregation
@@ -251,12 +253,12 @@ All endpoints return JSON. Errors use `{ "error": "message" }`, with `422` for v
 | `DELETE` | `/api/problems/:id`          | Delete a problem and its review logs.         |
 | `POST`   | `/api/problems/:id/review`   | Record a review `{ "rating": 0–3 }` and reschedule. |
 | `GET`    | `/api/stats`                 | Dashboard aggregates (totals, streak, heatmap, due list). |
-| `GET`    | `/api/ai/status`             | AI configuration, live free-model count and fallback chain. |
+| `GET`    | `/api/ai/status`             | Active provider, free-model count and fallback chain. |
 | `POST`   | `/api/ai/hint`               | Generate a hint `{ "problemId", "stage": 1–3 }`. |
 | `POST`   | `/api/ai/explain`            | Explain a saved solution `{ "problemId" }`. |
 | `POST`   | `/api/ai/coach`              | Analyse dashboard data and return a coaching report. |
 
-AI endpoints return `503` with a friendly message when `OPENROUTER_API_KEY` is missing, and `502` if every free model attempt fails.
+AI endpoints return `429` when the keyless provider's 30-second cooldown is active, and `503` only if AI is explicitly disabled. Provider failures return `502`.
 
 Example:
 
@@ -278,7 +280,8 @@ curl -X POST http://localhost:3000/api/problems \
 - **Your GitHub link** — already set to [`github.com/Cruzzop`](https://github.com/Cruzzop) via `GITHUB_URL` in [`src/lib/constants.ts`](./src/lib/constants.ts). Change it if you fork the project.
 - **Add platforms or topics** — edit `PLATFORMS` and `TOPIC_SUGGESTIONS` in the same file.
 - **Change the schedule** — tune the multipliers and clamps in [`src/lib/srs.ts`](./src/lib/srs.ts).
-- **AI models** — edit `PREFERRED_FREE_MODELS` in [`src/lib/ai/openrouter.ts`](./src/lib/ai/openrouter.ts) to change the preference order, or set `OPENROUTER_MODEL` in `.env` to pin one model.
+- **AI models** — edit `PREFERRED_FREE_MODELS` in [`src/lib/ai/openrouter.ts`](./src/lib/ai/openrouter.ts) to change the OpenRouter preference order, set `OPENROUTER_MODEL` in `.env` to pin one model, or set `AI_KEYLESS_FALLBACK="false"` to disable the keyless provider.
+- **Keyless model** — the Pollinations model ID is in [`src/lib/ai/keyless.ts`](./src/lib/ai/keyless.ts).
 - **AI prompts** — hint levels, explainer JSON shape and coach instructions live in [`src/lib/ai/prompts.ts`](./src/lib/ai/prompts.ts).
 - **Colours** — the accent gradient and surfaces are defined in [`src/app/globals.css`](./src/app/globals.css).
 

@@ -18,7 +18,6 @@ import {
 import { isAiEnabled } from "@/lib/ai/config";
 import { formatDate, pluralize } from "@/lib/format";
 import { getDashboardData } from "@/lib/queries";
-import { cn } from "@/lib/cn";
 import { panel, panelHeader } from "@/lib/ui";
 
 export const dynamic = "force-dynamic";
@@ -127,87 +126,59 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid items-start gap-4 lg:grid-cols-3">
-        <section className={cn(panel, "min-w-0 lg:col-span-2")}>
-          <div className={panelHeader}>
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-100">Activity</h2>
-              <p className="mt-0.5 text-xs text-zinc-500">
-                {totals.reviews30d} reviews in the last 30 days
-              </p>
-            </div>
-            <span className="rounded-full bg-white/[0.04] px-2.5 py-1 text-[11px] text-zinc-400 ring-1 ring-inset ring-white/[0.06]">
-              {totals.reviewsToday} today
-            </span>
-          </div>
-          <div className="p-5">
-            <ActivityHeatmap days={data.heatmap} />
-          </div>
-        </section>
-
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <section className={panel}>
             <div className={panelHeader}>
-              <h2 className="text-sm font-semibold text-zinc-100">
-                Difficulty
-              </h2>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-100">Activity</h2>
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  {totals.reviews30d} reviews in the last 30 days
+                </p>
+              </div>
+              <span className="rounded-full bg-white/[0.04] px-2.5 py-1 text-[11px] text-zinc-400 ring-1 ring-inset ring-white/[0.06]">
+                {totals.reviewsToday} today
+              </span>
             </div>
             <div className="p-5">
-              <DifficultyDonut data={data.difficulty} />
+              <ActivityHeatmap days={data.heatmap} />
             </div>
           </section>
 
-          <AiCoach aiEnabled={isAiEnabled()} />
-        </div>
-      </div>
-
-      <div className="grid items-start gap-4 lg:grid-cols-3">
-        <section className={cn(panel, "min-w-0 lg:col-span-2")}>
-          <div className={panelHeader}>
-            <div>
-              <h2 className="text-sm font-semibold text-zinc-100">
-                Due for review
-              </h2>
-              <p className="mt-0.5 text-xs text-zinc-500">
-                {totals.dueToday === 0
-                  ? "Nothing due right now"
-                  : `${totals.dueToday} ${pluralize(totals.dueToday, "problem")} waiting`}
-              </p>
-            </div>
-            <Link
-              href="/review"
-              className="text-xs font-medium text-indigo-300 transition-colors hover:text-indigo-200"
-            >
-              Start review →
-            </Link>
-          </div>
-          <div className="px-5 py-2">
-            <DueList problems={data.due} />
-          </div>
-          {totals.dueToday > 0 && (
-            <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
-              <span className="text-[11px] text-zinc-600">
-                {totals.dueThisWeek} coming up this week
-              </span>
-              <Link
-                href="/review"
-                className="text-[11px] font-medium text-indigo-300 transition-colors hover:text-indigo-200"
-              >
-                Review all {totals.dueToday} →
-              </Link>
-            </div>
-          )}
-        </section>
-
-        <div className="space-y-4">
           <section className={panel}>
             <div className={panelHeader}>
-              <h2 className="text-sm font-semibold text-zinc-100">
-                Top topics
-              </h2>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-100">
+                  Due for review
+                </h2>
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  {totals.dueToday === 0
+                    ? "Nothing due right now"
+                    : `${totals.dueToday} ${pluralize(totals.dueToday, "problem")} waiting`}
+                </p>
+              </div>
+              <Link
+                href="/review"
+                className="text-xs font-medium text-indigo-300 transition-colors hover:text-indigo-200"
+              >
+                Start review →
+              </Link>
             </div>
-            <div className="p-5">
-              <TopicBars topics={data.topics} />
+            <div className="px-5 py-2">
+              <DueList problems={data.due} />
             </div>
+            {totals.dueToday > 0 && (
+              <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
+                <span className="text-[11px] text-zinc-600">
+                  {totals.dueThisWeek} coming up this week
+                </span>
+                <Link
+                  href="/review"
+                  className="text-[11px] font-medium text-indigo-300 transition-colors hover:text-indigo-200"
+                >
+                  Review all {totals.dueToday} →
+                </Link>
+              </div>
+            )}
           </section>
 
           <section className={panel}>
@@ -245,6 +216,32 @@ export default async function DashboardPage() {
                   ))}
                 </ul>
               )}
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-4">
+          <section className={panel}>
+            <div className={panelHeader}>
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Difficulty
+              </h2>
+            </div>
+            <div className="p-5">
+              <DifficultyDonut data={data.difficulty} />
+            </div>
+          </section>
+
+          <AiCoach aiEnabled={isAiEnabled()} />
+
+          <section className={panel}>
+            <div className={panelHeader}>
+              <h2 className="text-sm font-semibold text-zinc-100">
+                Top topics
+              </h2>
+            </div>
+            <div className="p-5">
+              <TopicBars topics={data.topics} />
             </div>
           </section>
         </div>

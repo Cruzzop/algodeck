@@ -75,8 +75,8 @@ export function SolutionExplainer({
       <div className="p-5">
         {!aiEnabled ? (
           <p className="text-sm leading-relaxed text-zinc-600">
-            AI is optional. Add a free OpenRouter key in .env to unlock the
-            explainer.
+            AI is turned off. Add a free OpenRouter key or enable the built-in
+            free provider in .env.
           </p>
         ) : !hasSolution ? (
           <p className="text-sm leading-relaxed text-zinc-600">

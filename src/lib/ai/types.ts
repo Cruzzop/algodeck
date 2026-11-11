@@ -39,8 +39,12 @@ export type AiCoachResponse = {
   model: string;
 };
 
+export type AiProvider = "openrouter" | "keyless" | "off";
+
 export type AiStatus = {
   enabled: boolean;
+  provider: AiProvider;
+  keylessEnabled: boolean;
   configuredModel: string | null;
   freeModelCount: number;
   chain: string[];

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getDashboardData } from "@/lib/queries";
 import { aiErrorResponse } from "@/lib/ai/http";
-import { aiChat } from "@/lib/ai/openrouter";
+import { aiChat } from "@/lib/ai/chat";
 import { coachMessages, parseCoachReport } from "@/lib/ai/prompts";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +13,7 @@ export async function POST() {
     const result = await aiChat({
       messages: coachMessages(data),
       maxTokens: 700,
+      json: true,
     });
 
     const report = parseCoachReport(result.text);

@@ -383,7 +383,8 @@ export function ReviewSession({
               </Button>
               {!aiEnabled && (
                 <p className="-mt-2 text-[10px] text-zinc-600">
-                  AI hints are off — add a free OpenRouter key in .env.
+                  AI hints are off — add a free OpenRouter key or enable the
+                  built-in free provider.
                 </p>
               )}
               <p className="text-[11px] text-zinc-600">

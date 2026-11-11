@@ -121,7 +121,7 @@ export function AiCoach({ aiEnabled }: { aiEnabled: boolean }) {
           <p className="text-xs leading-relaxed text-zinc-600">
             {aiEnabled
               ? "Get a short read on your streak, weak spots and the best way to spend the next three days."
-              : "AI is optional. Add a free OpenRouter key in .env to unlock the coach."}
+              : "AI is turned off. Add a free OpenRouter key or enable the built-in free provider in .env."}
           </p>
         )}
 

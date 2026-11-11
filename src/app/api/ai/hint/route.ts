@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { parseTopics } from "@/lib/serialize";
 import { aiErrorResponse } from "@/lib/ai/http";
-import { aiChat } from "@/lib/ai/openrouter";
+import { aiChat } from "@/lib/ai/chat";
 import { hintMessages } from "@/lib/ai/prompts";
 import { aiHintRequestSchema } from "@/lib/validation";
 

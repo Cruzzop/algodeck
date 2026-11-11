@@ -21,14 +21,14 @@ export function AiNote({
         title={
           model
             ? `Model: ${model}`
-            : "Free OpenRouter models with automatic fallback"
+            : "Free AI with automatic provider fallback"
         }
       >
         Free AI
         {model ? (
           <span className="text-zinc-500"> · {model}</span>
         ) : (
-          " · swaps models automatically"
+          " · no paid key needed"
         )}
       </span>
     </p>

@@ -1,5 +1,6 @@
-import { configuredModel, isAiEnabled } from "./config";
-import type { AiStatus, ChatMessage } from "./types";
+import { configuredModel } from "./config";
+import { AiError } from "./errors";
+import type { ChatMessage } from "./types";
 
 const OPENROUTER_API = "https://openrouter.ai/api/v1";
 const MODEL_CACHE_MS = 30 * 60 * 1000;
@@ -52,16 +53,6 @@ const FALLBACK_MODELS: ModelInfo[] = [
 let modelCache: { fetchedAt: number; models: ModelInfo[] } | null = null;
 let lastGoodModel: string | null = null;
 const failedModels = new Map<string, number>();
-
-export class AiError extends Error {
-  status: number;
-
-  constructor(message: string, status = 502) {
-    super(message);
-    this.name = "AiError";
-    this.status = status;
-  }
-}
 
 function isFreeTextModel(model: Record<string, unknown>): boolean {
   const pricing = model.pricing as
@@ -197,7 +188,7 @@ function isModelProblem(status: number, message: string): boolean {
   );
 }
 
-export async function aiChat(options: {
+export async function openRouterChat(options: {
   messages: ChatMessage[];
   maxTokens?: number;
 }): Promise<{ text: string; model: string }> {
@@ -316,11 +307,13 @@ export async function aiChat(options: {
   );
 }
 
-export async function getAiStatus(): Promise<AiStatus> {
+export async function getOpenRouterStatus(): Promise<{
+  freeModelCount: number;
+  chain: string[];
+  lastGoodModel: string | null;
+}> {
   const models = await fetchFreeModels();
   return {
-    enabled: isAiEnabled(),
-    configuredModel: configuredModel(),
     freeModelCount: models.length,
     chain: rankModels(models),
     lastGoodModel,

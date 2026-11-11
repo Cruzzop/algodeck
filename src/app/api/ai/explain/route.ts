@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { parseTopics } from "@/lib/serialize";
 import { aiErrorResponse } from "@/lib/ai/http";
-import { aiChat } from "@/lib/ai/openrouter";
+import { aiChat } from "@/lib/ai/chat";
 import { explainMessages, parseExplanation } from "@/lib/ai/prompts";
 import { aiProblemRequestSchema } from "@/lib/validation";
 
@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         topics: parseTopics(problem.topics),
       }),
       maxTokens: 1_200,
+      json: true,
     });
 
     const explanation = parseExplanation(result.text);
