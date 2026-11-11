@@ -2,7 +2,21 @@
 // Run with: npm run db:seed
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+// Turso env vars switch the seed to the hosted libSQL database; otherwise the
+// local SQLite file is used.
+async function makePrisma() {
+  const tursoUrl = process.env.TURSO_DATABASE_URL?.trim();
+  if (!tursoUrl) return new PrismaClient();
+
+  const { PrismaLibSQL } = await import("@prisma/adapter-libsql");
+  const adapter = new PrismaLibSQL({
+    url: tursoUrl,
+    authToken: process.env.TURSO_AUTH_TOKEN?.trim() || undefined,
+  });
+  return new PrismaClient({ adapter });
+}
+
+const prisma = await makePrisma();
 
 function startOfDay(date) {
   const copy = new Date(date);

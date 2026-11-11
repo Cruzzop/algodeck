@@ -118,18 +118,39 @@ npm run dev
 
 ## Deploy it free (always on)
 
-The repo ships a production Docker image (`Dockerfile`) that runs anywhere Docker does. The fastest **free, always-on** option is Northflank's Sandbox tier — no credit card, and the app never sleeps or needs "waking up":
+No card anywhere in this flow. **Vercel** (free Hobby plan) hosts the app, and a free **Turso** database keeps your data. Nothing sleeps and nothing needs "waking up" — pages respond instantly, with no session to reactivate.
 
-1. Create a free [Northflank](https://northflank.com) account → **Create project → Service → Build from Git**, connect this repo and pick **Dockerfile** as the build type.
-2. Compute plan: `0.5 vCPU / 1 GB` is plenty (uses about $12 of the free $20/month Sandbox allowance).
-3. **Volumes**: add a small volume (1–5 GB) mounted at `/app/prisma/data`. That is where the SQLite file lives, so your data survives restarts and redeploys.
-4. **Ports**: add a public port `3000` (HTTP). Northflank issues a free HTTPS URL like `https://algodeck-xxxxx.code.run` and supports custom domains on the free plan.
-5. Environment variables (all optional):
-   - `SEED_DEMO_DATA="true"` — loads the 28-problem demo deck on the very first boot; it never overwrites existing data.
-   - `OPENROUTER_API_KEY` — optional upgrade for the OpenRouter free-model chain. AI already works with no key.
-6. Deploy. The container runs `prisma db push` on every boot, so schema changes ship together with the code, and pushes to `main` rebuild the service automatically.
+### 1. Create the database on Turso
 
-> **Notes:** Northflank bills egress ($0.06/GB) against the free allowance, which is plenty for a portfolio. The Sandbox tier is meant for demos rather than production workloads. A good "forever server" alternative is Oracle Cloud's Always Free tier (2 ARM cores, 12 GB RAM) — the app runs unchanged on it with `npm run build && npm run start` behind Caddy.
+Create a free account at [app.turso.tech](https://app.turso.tech) (GitHub login works, no card). Create a database (e.g. `algodeck`) and copy its **database URL** (`libsql://…turso.io`) plus an **auth token** (organization → Tokens).
+
+### 2. Fill the database once, from your machine
+
+```bash
+# .env
+TURSO_DATABASE_URL="libsql://algodeck-xxxx.turso.io"
+TURSO_AUTH_TOKEN="ey..."
+```
+
+```bash
+npm run db:turso -- --seed   # applies the schema, then loads the demo deck
+```
+
+Local development is unaffected — without the Turso vars the app keeps using SQLite from `DATABASE_URL`.
+
+### 3. Deploy on Vercel
+
+Import the GitHub repo at [vercel.com](https://vercel.com) (sign in with GitHub, no card) and add three environment variables in **Project → Settings → Environment Variables**:
+
+| Variable              | Value                          |
+| --------------------- | ------------------------------ |
+| `TURSO_DATABASE_URL`  | `libsql://algodeck-xxxx.turso.io` |
+| `TURSO_AUTH_TOKEN`    | the token from step 1          |
+| `DATABASE_URL`        | `file:./dev.db` (build-time only, keeps Prisma happy) |
+
+Deploy. You get a free HTTPS URL like `https://algodeck.vercel.app`, and every push to `main` redeploys automatically. The AI features work on the deployment with no key, exactly like locally.
+
+> **Notes:** Vercel Hobby is for personal/non-commercial projects — perfect for a portfolio. Turso's free tier covers 100 databases, 5 GB and 500M row reads/month. On shared serverless IPs the keyless AI's 30-second cooldown can appear more often; adding a free OpenRouter key removes that bottleneck. The `Dockerfile` in this repo still works if you ever want a "real server" (e.g. Oracle Cloud's always-free VM).
 
 ## AI features (free, works out of the box)
 
