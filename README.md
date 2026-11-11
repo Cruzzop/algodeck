@@ -116,6 +116,21 @@ npm run dev
 | `npm run db:push`   | Push the Prisma schema without seeding                   |
 | `npm run db:studio` | Open Prisma Studio to browse the database                |
 
+## Deploy it free (always on)
+
+The repo ships a production Docker image (`Dockerfile`) that runs anywhere Docker does. The fastest **free, always-on** option is Northflank's Sandbox tier — no credit card, and the app never sleeps or needs "waking up":
+
+1. Create a free [Northflank](https://northflank.com) account → **Create project → Service → Build from Git**, connect this repo and pick **Dockerfile** as the build type.
+2. Compute plan: `0.5 vCPU / 1 GB` is plenty (uses about $12 of the free $20/month Sandbox allowance).
+3. **Volumes**: add a small volume (1–5 GB) mounted at `/app/prisma/data`. That is where the SQLite file lives, so your data survives restarts and redeploys.
+4. **Ports**: add a public port `3000` (HTTP). Northflank issues a free HTTPS URL like `https://algodeck-xxxxx.code.run` and supports custom domains on the free plan.
+5. Environment variables (all optional):
+   - `SEED_DEMO_DATA="true"` — loads the 28-problem demo deck on the very first boot; it never overwrites existing data.
+   - `OPENROUTER_API_KEY` — optional upgrade for the OpenRouter free-model chain. AI already works with no key.
+6. Deploy. The container runs `prisma db push` on every boot, so schema changes ship together with the code, and pushes to `main` rebuild the service automatically.
+
+> **Notes:** Northflank bills egress ($0.06/GB) against the free allowance, which is plenty for a portfolio. The Sandbox tier is meant for demos rather than production workloads. A good "forever server" alternative is Oracle Cloud's Always Free tier (2 ARM cores, 12 GB RAM) — the app runs unchanged on it with `npm run build && npm run start` behind Caddy.
+
 ## AI features (free, works out of the box)
 
 AlgoDeck ships with three AI helpers that work **without any API key or signup**. The default provider is Pollinations' free GPT-OSS 20B endpoint, called server-side. If you want better quality and higher limits, add a free OpenRouter key — OpenRouter is then tried first, and the keyless provider stays as the final fallback.

@@ -607,6 +607,18 @@ def find_kth_largest(nums, k):
 ];
 
 async function main() {
+  // Container boot flag: only seed when the deck is completely empty, so a
+  // redeploy never wipes real data.
+  if (process.argv.includes("--if-empty")) {
+    const existing = await prisma.problem.count();
+    if (existing > 0) {
+      console.log(
+        `Deck already has ${existing} ${existing === 1 ? "problem" : "problems"} — skipping demo seed.`
+      );
+      return;
+    }
+  }
+
   console.log("Resetting AlgoDeck demo data…");
   await prisma.reviewLog.deleteMany();
   await prisma.problem.deleteMany();
