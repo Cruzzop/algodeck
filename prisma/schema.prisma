@@ -1,0 +1,54 @@
+// Prisma schema for AlgoDeck.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A single DSA problem the user is tracking.
+model Problem {
+  id           String   @id @default(cuid())
+  title        String
+  url          String?
+  platform     String   @default("LeetCode")
+  difficulty   String   @default("MEDIUM")
+  status       String   @default("TODO")
+  topics       String   @default("")
+  notes        String?
+  solution     String?
+  timeSpentMin Int      @default(0)
+
+  // Spaced repetition state (SM-2 inspired)
+  ease           Float    @default(2.5)
+  intervalDays   Int      @default(0)
+  repetitions    Int      @default(0)
+  dueAt          DateTime?
+  lastReviewedAt DateTime?
+
+  solvedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  reviews ReviewLog[]
+
+  @@index([status, dueAt])
+  @@index([difficulty])
+}
+
+/// One review event, used for streaks, the heatmap and history.
+model ReviewLog {
+  id         String   @id @default(cuid())
+  problemId  String
+  rating     Int
+  reviewedAt DateTime @default(now())
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([reviewedAt])
+  @@index([problemId])
+}
