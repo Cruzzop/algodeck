@@ -4,6 +4,14 @@
   "private": true,
   "license": "MIT",
   "description": "AlgoDeck — a DSA practice tracker with spaced repetition, built with Next.js, Prisma and SQLite.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cruzzop/algodeck.git"
+  },
+  "homepage": "https://github.com/Cruzzop/algodeck#readme",
+  "bugs": {
+    "url": "https://github.com/Cruzzop/algodeck/issues"
+  },
   "keywords": [
     "dsa",
     "spaced-repetition",

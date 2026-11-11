@@ -12,6 +12,7 @@ AlgoDeck is a full-stack practice tracker with a built-in spaced-repetition sche
 [![Prisma](https://img.shields.io/badge/Prisma-6-2d3748?style=flat-square&logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-local-003b57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![CI](https://github.com/Cruzzop/algodeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Cruzzop/algodeck/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](./LICENSE)
 
 [Features](#features) · [Quick start](#quick-start) · [AI features](#ai-features-optional-free) · [Screenshots](#screenshots) · [How the scheduling works](#how-the-scheduling-works) · [API](#api-reference) · [Roadmap](#roadmap)
