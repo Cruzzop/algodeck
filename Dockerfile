@@ -9,9 +9,15 @@ FROM node:22-bookworm-slim
 
 WORKDIR /app
 
-# Install everything, including devDependencies: the Prisma CLI used on boot
-# lives there. NODE_ENV stays unset on purpose so npm ci installs them.
+# Prisma's engine detection needs the openssl binary, which slim images omit.
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install dependencies. The postinstall hook runs `prisma generate`, so the
+# schema must already be present.
 COPY package.json package-lock.json ./
+COPY prisma/schema.prisma ./prisma/schema.prisma
 RUN npm ci
 
 COPY . .
