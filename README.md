@@ -41,6 +41,8 @@ AlgoDeck treats every solved problem like a flashcard. It schedules reviews usin
 - **Review sessions** — keyboard-first reviewing (`space` to reveal, `1`–`4` to rate, `h` for a hint) with a live preview of the next interval for every rating.
 - **Spaced repetition** — SM-2-inspired scheduling with four ratings: Again, Hard, Good, Easy. Again reschedules in 10 minutes; everything else grows the interval.
 - **Built-in free AI** — progressive review hints, a solution explainer that turns saved code into a revision card, and a dashboard coach. Works with no key, and upgrades to OpenRouter free models when a key is added.
+- **Dual database mode** — a single SQLite file locally, or a free hosted Turso (libSQL) database on serverless platforms. Same queries, chosen by environment variables.
+- **Read-only demo gate** — set `DEMO_PASSWORD` on a shared deployment and visitors can browse everything while writes stay locked behind `/unlock`; unset it and it behaves like a normal single-user app with no login.
 - **Quick actions** — add, edit, delete, and toggle solved/todo from the table without leaving the page.
 - **Polished dark UI** — custom design system, inline SVG icons and charts, animated modals and toasts, responsive down to mobile. No UI-library dependency.
 - **Typed end to end** — Prisma models, Zod request validation and shared TypeScript DTOs.
@@ -123,6 +125,7 @@ npm run dev
 | `npm run db:reset`  | Force-reset the database, then seed                      |
 | `npm run db:push`   | Push the Prisma schema without seeding                   |
 | `npm run db:studio` | Open Prisma Studio to browse the database                |
+| `npm run db:turso`  | Apply the schema to a remote Turso database (`-- --seed` also loads demo data) |
 
 ## Deploy it free (always on)
 
