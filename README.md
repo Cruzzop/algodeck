@@ -6,6 +6,8 @@
 
 AlgoDeck is a full-stack practice tracker with a built-in spaced-repetition scheduler. Log what you solved, keep notes and solutions in one place, and let the app tell you exactly what to revisit before you forget it. AI hints, solution explainers and coaching work out of the box on free providers — no paid API key required.
 
+[![🚀 Live demo](https://img.shields.io/badge/🚀_Live_demo-algodeck--seven.vercel.app-8b5cf6?style=for-the-badge)](https://algodeck-seven.vercel.app)
+
 [![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-087ea4?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -15,7 +17,7 @@ AlgoDeck is a full-stack practice tracker with a built-in spaced-repetition sche
 [![CI](https://github.com/Cruzzop/algodeck/actions/workflows/ci.yml/badge.svg)](https://github.com/Cruzzop/algodeck/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](./LICENSE)
 
-[Features](#features) · [Quick start](#quick-start) · [AI features](#ai-features-optional-free) · [Screenshots](#screenshots) · [How the scheduling works](#how-the-scheduling-works) · [API](#api-reference) · [Roadmap](#roadmap)
+[Live demo](https://algodeck-seven.vercel.app) · [Features](#features) · [Quick start](#quick-start) · [AI features](#ai-features-optional-free) · [Screenshots](#screenshots) · [How the scheduling works](#how-the-scheduling-works) · [API](#api-reference) · [Roadmap](#roadmap)
 
 </div>
 
@@ -60,6 +62,12 @@ AlgoDeck treats every solved problem like a flashcard. It schedules reviews usin
 ### Problem detail
 
 ![Problem detail](./docs/problem-detail.png)
+
+### Live deployment
+
+The same app running free on Vercel + Turso — the exact setup described in the [deploy guide](#deploy-it-free-always-on):
+
+![Live deployment](./docs/live-deploy.png)
 
 ## Tech stack
 
