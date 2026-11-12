@@ -1,6 +1,26 @@
 // Demo data for AlgoDeck.
 // Run with: npm run db:seed
 import { PrismaClient } from "@prisma/client";
+import { readFileSync } from "node:fs";
+
+// Load .env so a plain `node prisma/seed.mjs` sees DATABASE_URL / Turso vars
+// before the client is created.
+try {
+  for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (!m || process.env[m[1]] !== undefined) continue;
+    let value = m[2];
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[m[1]] = value;
+  }
+} catch {
+  // No .env file — fall back to real environment variables.
+}
 
 // Turso env vars switch the seed to the hosted libSQL database; otherwise the
 // local SQLite file is used.

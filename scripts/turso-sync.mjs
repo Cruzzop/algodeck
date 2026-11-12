@@ -7,6 +7,25 @@
 //   node scripts/turso-sync.mjs           sync the schema (idempotent)
 //   node scripts/turso-sync.mjs --seed    sync the schema, then load demo data
 import { execFileSync, spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
+// Load .env so a plain `node scripts/turso-sync.mjs` sees the Turso vars.
+try {
+  for (const line of readFileSync(new URL("../.env", import.meta.url), "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (!m || process.env[m[1]] !== undefined) continue;
+    let value = m[2];
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    process.env[m[1]] = value;
+  }
+} catch {
+  // No .env file — fall back to real environment variables.
+}
 
 const tursoUrl = process.env.TURSO_DATABASE_URL?.trim();
 if (!tursoUrl || !process.env.TURSO_AUTH_TOKEN?.trim()) {
@@ -32,6 +51,7 @@ const sql = execFileSync(
   ],
   {
     encoding: "utf8",
+    shell: process.platform === "win32",
     // Prisma only needs a syntactically valid SQLite URL to load the schema.
     env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL || "file:./dev.db" },
   }
