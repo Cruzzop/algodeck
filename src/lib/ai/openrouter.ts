@@ -7,7 +7,7 @@ const MODEL_CACHE_MS = 30 * 60 * 1000;
 const FAILED_MODEL_MS = 10 * 60 * 1000;
 const REQUEST_BUDGET_MS = 55 * 1000;
 const PER_MODEL_TIMEOUT_MS = 40 * 1000;
-const MAX_ATTEMPTS = 4;
+const MAX_ATTEMPTS = 8;
 
 type ModelInfo = {
   id: string;
@@ -21,7 +21,6 @@ type ModelInfo = {
 const PREFERRED_FREE_MODELS = [
   "google/gemma-4-31b-it:free",
   "baidu/ernie-5.5-flash-preview:free",
-  "thinkingmachines/inkling-2-small:free",
   "nvidia/nemotron-3.5-super-vl:free",
   "nvidia/nemotron-3-ultra-550b-a55b:free",
   "dots-studio/dots-3-note-preview:free",
@@ -41,7 +40,6 @@ const PREFERRED_FREE_MODELS = [
 const FALLBACK_MODELS: ModelInfo[] = [
   { id: "google/gemma-4-31b-it:free", contextLength: 262_144 },
   { id: "baidu/ernie-5.5-flash-preview:free", contextLength: 1_024_000 },
-  { id: "thinkingmachines/inkling-2-small:free", contextLength: 1_048_576 },
   { id: "nvidia/nemotron-3.5-super-vl:free", contextLength: 1_000_000 },
   { id: "nvidia/nemotron-3-ultra-550b-a55b:free", contextLength: 1_000_000 },
   { id: "dots-studio/dots-3-note-preview:free", contextLength: 512_000 },
@@ -182,6 +180,9 @@ function extractText(body: unknown): string {
 
 function isModelProblem(status: number, message: string): boolean {
   if (status === 404) return true;
+  // 403 is usually a per-model restriction (agentic-only endpoints,
+  // moderation, regional policy) rather than a bad key — try the next one.
+  if (status === 403) return true;
   if (status !== 400) return false;
   return /model|endpoint|provider|not found|unavailable|deprecated|invalid|support/i.test(
     message
@@ -251,20 +252,26 @@ export async function openRouterChat(options: {
             rawBody.slice(0, 240)
         );
 
-        if (response.status === 401 || response.status === 403) {
+        // 401 always means the key itself is broken. A 403 is only fatal when
+        // the message points at credentials — otherwise it is a per-model
+        // restriction (agentic-only, moderation, region) and we move on.
+        if (
+          response.status === 401 ||
+          (response.status === 403 && /api key|auth|credential/i.test(errorMessage))
+        ) {
           throw new AiError(
             "OpenRouter rejected the API key. Check OPENROUTER_API_KEY in .env.",
             503
           );
         }
 
-        if (isModelProblem(response.status, errorMessage)) {
-          failedModels.set(model, Date.now() + FAILED_MODEL_MS);
+        if ([402, 429, 500, 502, 503, 504].includes(response.status)) {
           lastError = new Error(`${model}: ${errorMessage}`);
           continue;
         }
 
-        if ([402, 429, 500, 502, 503, 504].includes(response.status)) {
+        if (isModelProblem(response.status, errorMessage)) {
+          failedModels.set(model, Date.now() + FAILED_MODEL_MS);
           lastError = new Error(`${model}: ${errorMessage}`);
           continue;
         }
