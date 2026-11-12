@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { DifficultyBadge } from "@/components/difficulty-badge";
 import { PageHeader } from "@/components/page-header";
 import { ProblemForm } from "@/components/problems/problem-form";
-import { Button } from "@/components/ui/button";
+import { Button, buttonClass } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input, Select } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -16,6 +16,7 @@ import {
   CheckIcon,
   ExternalLinkIcon,
   ListIcon,
+  LockIcon,
   PencilIcon,
   PlusIcon,
   SearchIcon,
@@ -60,8 +61,10 @@ function isDue(problem: ProblemDTO) {
 
 export function ProblemsClient({
   initialProblems,
+  readOnly = false,
 }: {
   initialProblems: ProblemDTO[];
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const { toast, show } = useToast();
@@ -160,6 +163,11 @@ export function ProblemsClient({
   }
 
   async function toggleSolved(problem: ProblemDTO) {
+    if (readOnly) {
+      show("Read-only demo — unlock to record changes.");
+      return;
+    }
+
     const nextStatus = problem.status === "SOLVED" ? "TODO" : "SOLVED";
 
     setProblems((items) =>
@@ -235,10 +243,17 @@ export function ProblemsClient({
         title="Problems"
         description={`${counts.ALL} tracked · ${counts.SOLVED} solved · ${counts.DUE} due for review`}
         actions={
-          <Button onClick={openCreate}>
-            <PlusIcon className="size-4" />
-            Add problem
-          </Button>
+          readOnly ? (
+            <Link href="/unlock" className={buttonClass({ variant: "secondary" })}>
+              <LockIcon className="size-4" />
+              Unlock editing
+            </Link>
+          ) : (
+            <Button onClick={openCreate}>
+              <PlusIcon className="size-4" />
+              Add problem
+            </Button>
+          )
         }
       />
 
@@ -312,10 +327,17 @@ export function ProblemsClient({
           title="Your deck is empty"
           description="Add the first problem you have solved, or load the demo data with `npm run db:seed`."
         >
-          <Button onClick={openCreate}>
-            <PlusIcon className="size-4" />
-            Add your first problem
-          </Button>
+          {readOnly ? (
+            <Link href="/unlock" className={buttonClass({ variant: "secondary" })}>
+              <LockIcon className="size-4" />
+              Unlock editing
+            </Link>
+          ) : (
+            <Button onClick={openCreate}>
+              <PlusIcon className="size-4" />
+              Add your first problem
+            </Button>
+          )}
         </EmptyState>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -342,9 +364,11 @@ export function ProblemsClient({
                   <th className="hidden py-3 pr-4 font-medium md:table-cell">
                     Next review
                   </th>
-                  <th className="w-[86px] py-3 pr-4 text-right font-medium">
-                    Actions
-                  </th>
+                  {!readOnly && (
+                    <th className="w-[86px] py-3 pr-4 text-right font-medium">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
@@ -447,29 +471,31 @@ export function ProblemsClient({
                         </span>
                       </td>
 
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            type="button"
-                            onClick={() => openEdit(problem)}
-                            aria-label="Edit problem"
-                            className="grid size-8 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
-                          >
-                            <PencilIcon className="size-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteError(null);
-                              setDeleting(problem);
-                            }}
-                            aria-label="Delete problem"
-                            className="grid size-8 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
-                          >
-                            <TrashIcon className="size-4" />
-                          </button>
-                        </div>
-                      </td>
+                      {!readOnly && (
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEdit(problem)}
+                              aria-label="Edit problem"
+                              className="grid size-8 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-white/[0.06] hover:text-zinc-200"
+                            >
+                              <PencilIcon className="size-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteError(null);
+                                setDeleting(problem);
+                              }}
+                              aria-label="Delete problem"
+                              className="grid size-8 place-items-center rounded-lg text-zinc-500 transition-colors hover:bg-rose-500/10 hover:text-rose-300"
+                            >
+                              <TrashIcon className="size-4" />
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

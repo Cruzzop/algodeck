@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { serializeProblem, serializeReview } from "@/lib/serialize";
+import { isReadOnly } from "@/lib/auth";
 import { DifficultyBadge } from "@/components/difficulty-badge";
 import { CopyButton } from "@/components/problems/copy-button";
 import { ProblemDetailActions } from "@/components/problems/problem-detail-actions";
@@ -88,6 +89,7 @@ export default async function ProblemDetailPage({ params }: PageProps) {
   const reviews = problem.reviews.map(serializeReview);
   const totalReviews = problem._count.reviews;
   const due = dueLabel(dto.dueAt);
+  const readOnly = await isReadOnly();
 
   return (
     <div className="space-y-6">
@@ -135,7 +137,7 @@ export default async function ProblemDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        <ProblemDetailActions problem={dto} />
+        <ProblemDetailActions problem={dto} readOnly={readOnly} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">

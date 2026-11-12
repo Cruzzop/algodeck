@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { apiError } from "@/lib/api";
+import { writeGuard } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { addDays, startOfDay } from "@/lib/format";
 import { joinTopics, serializeProblem } from "@/lib/serialize";
@@ -53,6 +54,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const denied = writeGuard(request);
+    if (denied) return denied;
+
     const input = createProblemSchema.parse(await request.json());
     const now = new Date();
     const isSolved = input.status === "SOLVED";

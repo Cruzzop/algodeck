@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { serializeProblem } from "@/lib/serialize";
 import { endOfDay, startOfDay } from "@/lib/format";
 import { isAiEnabled } from "@/lib/ai/config";
+import { isReadOnly } from "@/lib/auth";
 import { PageHeader } from "@/components/page-header";
 import { ReviewSession } from "@/components/review/review-session";
 
@@ -14,6 +15,7 @@ export const metadata = {
 export default async function ReviewPage() {
   const now = new Date();
   const cutoff = endOfDay(now);
+  const readOnly = await isReadOnly();
 
   const [due, next, reviewsToday] = await Promise.all([
     db.problem.findMany({
@@ -47,6 +49,7 @@ export default async function ReviewPage() {
         nextDueAt={next?.dueAt?.toISOString() ?? null}
         reviewsToday={reviewsToday}
         aiEnabled={isAiEnabled()}
+        readOnly={readOnly}
       />
     </div>
   );

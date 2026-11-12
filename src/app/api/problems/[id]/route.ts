@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { apiError } from "@/lib/api";
+import { writeGuard } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { addDays, startOfDay } from "@/lib/format";
 import { joinTopics, serializeProblem, serializeReview } from "@/lib/serialize";
@@ -33,6 +34,9 @@ export async function GET(_request: NextRequest, { params }: Context) {
 
 export async function PATCH(request: NextRequest, { params }: Context) {
   try {
+    const denied = writeGuard(request);
+    if (denied) return denied;
+
     const { id } = await params;
     const input = updateProblemSchema.parse(await request.json());
 
@@ -74,8 +78,11 @@ export async function PATCH(request: NextRequest, { params }: Context) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: Context) {
+export async function DELETE(request: NextRequest, { params }: Context) {
   try {
+    const denied = writeGuard(request);
+    if (denied) return denied;
+
     const { id } = await params;
     const existing = await db.problem.findUnique({ where: { id } });
 

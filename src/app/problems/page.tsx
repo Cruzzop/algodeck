@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { serializeProblem } from "@/lib/serialize";
+import { isReadOnly } from "@/lib/auth";
 import { ProblemsClient } from "@/components/problems/problems-client";
 
 export const dynamic = "force-dynamic";
@@ -9,11 +10,15 @@ export const metadata = {
 };
 
 export default async function ProblemsPage() {
-  const problems = await db.problem.findMany({
-    orderBy: { updatedAt: "desc" },
-  });
+  const [problems, readOnly] = await Promise.all([
+    db.problem.findMany({ orderBy: { updatedAt: "desc" } }),
+    isReadOnly(),
+  ]);
 
   return (
-    <ProblemsClient initialProblems={problems.map(serializeProblem)} />
+    <ProblemsClient
+      initialProblems={problems.map(serializeProblem)}
+      readOnly={readOnly}
+    />
   );
 }

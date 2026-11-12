@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { apiError } from "@/lib/api";
+import { writeGuard } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { serializeProblem } from "@/lib/serialize";
 import { scheduleReview, type Rating } from "@/lib/srs";
@@ -11,6 +12,9 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function POST(request: NextRequest, { params }: Context) {
   try {
+    const denied = writeGuard(request);
+    if (denied) return denied;
+
     const { id } = await params;
     const { rating } = reviewSchema.parse(await request.json());
 

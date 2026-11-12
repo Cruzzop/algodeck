@@ -18,6 +18,7 @@ import {
   CheckCircleIcon,
   ExternalLinkIcon,
   LightbulbIcon,
+  LockIcon,
 } from "@/components/icons";
 import type { AiHintResponse } from "@/lib/ai/types";
 import { dueLabel, pluralize, type DueTone } from "@/lib/format";
@@ -38,11 +39,13 @@ export function ReviewSession({
   nextDueAt,
   reviewsToday,
   aiEnabled,
+  readOnly = false,
 }: {
   problems: ProblemDTO[];
   nextDueAt: string | null;
   reviewsToday: number;
   aiEnabled: boolean;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
 
@@ -85,6 +88,11 @@ export function ReviewSession({
     async (rating: Rating) => {
       if (!current || busy) return;
 
+      if (readOnly) {
+        setError("Read-only demo — unlock to record reviews.");
+        return;
+      }
+
       setBusy(true);
       setError(null);
 
@@ -124,7 +132,7 @@ export function ReviewSession({
         setBusy(false);
       }
     },
-    [current, busy, index, queue.length, router]
+    [current, busy, index, queue.length, readOnly, router]
   );
 
   const requestHint = useCallback(async () => {
@@ -449,33 +457,50 @@ export function ReviewSession({
 
         {revealed && (
           <div className="border-t border-white/[0.06] bg-white/[0.01] p-4 sm:p-5">
-            <p className="mb-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
-              How did it go?
-            </p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {RATINGS.map((rating, ratingIndex) => (
-                <button
-                  key={rating.value}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => rate(rating.value)}
-                  className={cn(
-                    "flex flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
-                    rating.className
-                  )}
+            {readOnly ? (
+              <div className="flex flex-col items-center gap-1.5 rounded-xl border border-amber-400/15 bg-amber-400/[0.05] px-4 py-4 text-center">
+                <p className="flex items-center gap-2 text-xs text-amber-200/80">
+                  <LockIcon className="size-3.5 shrink-0" />
+                  Read-only demo — reviews are not recorded.
+                </p>
+                <Link
+                  href="/unlock"
+                  className="text-xs font-medium text-amber-200 underline-offset-2 transition-colors hover:underline"
                 >
-                  <span className="flex items-center gap-1.5">
-                    {rating.label}
-                    <kbd className="rounded border border-white/15 px-1 py-0.5 text-[9px] font-normal opacity-60">
-                      {rating.hint}
-                    </kbd>
-                  </span>
-                  <span className="text-[10px] font-normal opacity-60">
-                    {previews[ratingIndex]?.interval}
-                  </span>
-                </button>
-              ))}
-            </div>
+                  Unlock to review
+                </Link>
+              </div>
+            ) : (
+              <>
+                <p className="mb-2.5 text-center text-[10px] font-medium uppercase tracking-[0.14em] text-zinc-600">
+                  How did it go?
+                </p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {RATINGS.map((rating, ratingIndex) => (
+                    <button
+                      key={rating.value}
+                      type="button"
+                      disabled={busy}
+                      onClick={() => rate(rating.value)}
+                      className={cn(
+                        "flex flex-col items-center gap-0.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors disabled:opacity-50",
+                        rating.className
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        {rating.label}
+                        <kbd className="rounded border border-white/15 px-1 py-0.5 text-[9px] font-normal opacity-60">
+                          {rating.hint}
+                        </kbd>
+                      </span>
+                      <span className="text-[10px] font-normal opacity-60">
+                        {previews[ratingIndex]?.interval}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

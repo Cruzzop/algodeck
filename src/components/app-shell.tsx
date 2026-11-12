@@ -10,6 +10,7 @@ import {
   ListIcon,
   RepeatIcon,
 } from "@/components/icons";
+import { GateBanner } from "@/components/auth/gate-banner";
 import { GITHUB_URL } from "@/lib/constants";
 import { cn } from "@/lib/cn";
 
@@ -44,9 +45,13 @@ function Brand() {
 
 export function AppShell({
   dueCount,
+  gateEnabled,
+  gateUnlocked,
   children,
 }: {
   dueCount: number;
+  gateEnabled: boolean;
+  gateUnlocked: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -146,6 +151,7 @@ export function AppShell({
 
       <main className="lg:pl-[248px]">
         <div className="mx-auto w-full max-w-[1180px] px-5 py-6 lg:px-10 lg:py-10">
+          <GateBanner enabled={gateEnabled} unlocked={gateUnlocked} />
           {children}
         </div>
       </main>

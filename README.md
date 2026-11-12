@@ -155,10 +155,21 @@ Import the GitHub repo at [vercel.com](https://vercel.com) (sign in with GitHub,
 | `TURSO_DATABASE_URL`  | `libsql://algodeck-xxxx.turso.io` |
 | `TURSO_AUTH_TOKEN`    | the token from step 1          |
 | `DATABASE_URL`        | `file:./dev.db` (build-time only, keeps Prisma happy) |
+| `DEMO_PASSWORD`       | optional — turns the site into a password-gated read-only demo |
 
 Deploy. You get a free HTTPS URL like `https://algodeck.vercel.app`, and every push to `main` redeploys automatically. The AI features work on the deployment with no key, exactly like locally.
 
 > **Notes:** Vercel Hobby is for personal/non-commercial projects — perfect for a portfolio. Turso's free tier covers 100 databases, 5 GB and 500M row reads/month. On shared serverless IPs the keyless AI's 30-second cooldown can appear more often; adding a free OpenRouter key removes that bottleneck. The `Dockerfile` in this repo still works if you ever want a "real server" (e.g. Oracle Cloud's always-free VM).
+
+### 4. Optional: lock the demo with a password
+
+Since anyone with the link can open the site, shared deployments should set one extra variable:
+
+```
+DEMO_PASSWORD="pick-something-memorable"
+```
+
+The site becomes a **read-only demo**: every page stays publicly browsable — dashboard, library, notes, saved solutions, AI hints — but every write (add, edit, delete, review ratings) is rejected with `403` until the visitor unlocks via `/unlock`. A slim amber banner explains the mode; entering the right password sets a signed 30-day cookie, and a **Lock again** button clears it. Leave `DEMO_PASSWORD` unset and the app behaves like a normal single-user tracker with no login at all.
 
 ## AI features (free, works out of the box)
 
@@ -286,7 +297,7 @@ Topics are stored as a comma-separated string to keep the first version small. N
 
 ## API reference
 
-All endpoints return JSON. Errors use `{ "error": "message" }`, with `422` for validation failures and `404` for missing problems.
+All endpoints return JSON. Errors use `{ "error": "message" }`, with `422` for validation failures and `404` for missing problems. When `DEMO_PASSWORD` is set and the visitor has not unlocked, every write endpoint answers `403`.
 
 | Method   | Endpoint                     | Description                                   |
 | -------- | ---------------------------- | --------------------------------------------- |
@@ -297,6 +308,8 @@ All endpoints return JSON. Errors use `{ "error": "message" }`, with `422` for v
 | `DELETE` | `/api/problems/:id`          | Delete a problem and its review logs.         |
 | `POST`   | `/api/problems/:id/review`   | Record a review `{ "rating": 0–3 }` and reschedule. |
 | `GET`    | `/api/stats`                 | Dashboard aggregates (totals, streak, heatmap, due list). |
+| `POST`   | `/api/unlock`                | Demo gate: `{ "password" }` → sets the unlock cookie. |
+| `DELETE` | `/api/unlock`                | Demo gate: clear the unlock cookie.           |
 | `GET`    | `/api/ai/status`             | Active provider, free-model count and fallback chain. |
 | `POST`   | `/api/ai/hint`               | Generate a hint `{ "problemId", "stage": 1–3 }`. |
 | `POST`   | `/api/ai/explain`            | Explain a saved solution `{ "problemId" }`. |

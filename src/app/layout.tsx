@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 import { db } from "@/lib/db";
+import { gateState } from "@/lib/auth";
 import { endOfDay } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -42,10 +43,14 @@ export default async function RootLayout({
     // The table may not exist yet on a fresh clone. The shell still renders.
   }
 
+  const gate = await gateState();
+
   return (
     <html lang="en">
       <body>
-        <AppShell dueCount={dueCount}>{children}</AppShell>
+        <AppShell dueCount={dueCount} gateEnabled={gate.enabled} gateUnlocked={gate.unlocked}>
+          {children}
+        </AppShell>
       </body>
     </html>
   );
